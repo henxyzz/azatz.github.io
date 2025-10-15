@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ramalan Jodoh</title>
+  <style>
+    /* ==== BODY ==== */
+    body {
+      margin: 0;
+      height: 100vh;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at top, #0f0f0f, #000);
+      color: #fff;
+      overflow: hidden;
+    }
+
+    /* ==== CARD / GLASS BOX ==== */
+    .glass {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(15px);
+      border-radius: 20px;
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.05);
+      padding: 35px 40px;
+      width: 90%;
+      max-width: 420px;
+      max-height: 90vh;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      animation: fadeIn 0.8s ease-in-out;
+      overflow: hidden;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, -45%) scale(0.9); }
+      to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+
+    /* ==== HEADING ==== */
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 15px;
+      color: #ff7bff;
+      text-shadow: 0 0 10px #ff00ff44;
+    }
+
+    /* ==== INPUT FORM ==== */
+    label {
+      display: block;
+      text-align: left;
+      margin-top: 12px;
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      outline: none;
+      transition: background 0.2s ease;
+    }
+
+    input:focus {
+      background: rgba(255,255,255,0.15);
+    }
+
+    /* ==== BUTTON ==== */
+    button {
+      margin-top: 18px;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #ff7bff, #8f00ff);
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #ff00ff55;
+    }
+
+    /* ==== HASIL ==== */
+    .result {
+      margin-top: 20px;
+      text-align: left;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 15px;
+      flex: 1;
+      overflow-y: auto;
+      display: none;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    /* ==== SCROLLBAR ==== */
+    .result::-webkit-scrollbar {
+      width: 6px;
+    }
+    .result::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .result::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+    }
+
+    /* ==== WARNING ==== */
+    .warning {
+      color: #ffb3b3;
+      font-size: 0.85rem;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="glass">
+    <h1>🔮 Ramalan Jodoh</h1>
+
+    <label>Nama Kamu</label>
+    <input type="text" id="nama1" placeholder="Contoh: Putu">
+
+    <label>Tanggal Lahir Kamu</label>
+    <input type="date" id="tgl1">
+
+    <label>Nama Pasangan</label>
+    <input type="text" id="nama2" placeholder="Contoh: Keyla">
+
+    <label>Tanggal Lahir Pasangan</label>
+    <input type="date" id="tgl2">
+
+    <button onclick="cekRamalan()">💫 Cek Ramalan</button>
+
+    <div class="result" id="result"></div>
+    <p class="warning" id="warning"></p>
+  </div>
+
+  <script>
+    async function cekRamalan() {
+      const nama1 = document.getElementById('nama1').value.trim();
+      const nama2 = document.getElementById('nama2').value.trim();
+      const tgl1 = document.getElementById('tgl1').value;
+      const tgl2 = document.getElementById('tgl2').value;
+      const resultBox = document.getElementById('result');
+      const warning = document.getElementById('warning');
+
+      if (!nama1 || !nama2 || !tgl1 || !tgl2) {
+        warning.textContent = "⚠️ Lengkapi semua data dulu ya!";
+        return;
+      }
+
+      warning.textContent = "";
+      resultBox.style.display = "none";
+      resultBox.innerHTML = "⏳ Sedang meramal...";
+
+      const [thn1, bln1, day1] = tgl1.split("-");
+      const [thn2, bln2, day2] = tgl2.split("-");
+      const url = `https://api.siputzx.my.id/api/primbon/ramalanjodoh?nama1=${encodeURIComponent(nama1)}&tgl1=${day1}&bln1=${bln1}&thn1=${thn1}&nama2=${encodeURIComponent(nama2)}&tgl2=${day2}&bln2=${bln2}&thn2=${thn2}`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.status) {
+          const hasil = data.data.result;
+          const html = `
+            <h3>💞 ${hasil.orang_pertama.nama} ❤️ ${hasil.orang_kedua.nama}</h3>
+            <p><b>${hasil.orang_pertama.tanggal_lahir}</b> & <b>${hasil.orang_kedua.tanggal_lahir}</b></p>
+            <p>${hasil.deskripsi}</p>
+            <ul>${hasil.hasil_ramalan.map(r => `<li>${r}</li>`).join('')}</ul>
+            <p><i>${data.data.peringatan}</i></p>
+          `;
+          resultBox.innerHTML = html;
+          resultBox.style.display = "block";
+          resultBox.scrollTop = 0;
+        } else {
+          warning.textContent = "❌ Gagal meramal, coba lagi nanti.";
+        }
+      } catch (e) {
+        warning.textContent = "⚠️ Terjadi kesalahan koneksi ke API.";
+      }
+    }
+  </script>
+</body>
+  </html>
